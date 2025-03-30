@@ -1,0 +1,90 @@
+
+{% extends 'base.html' %}
+{% load product_tags %}
+{% load humanize %}
+{% block title %}محصولات{% endblock title %}
+{% block content %}
+    <div class="container-fluid">
+        <div class="row mt-2">
+            <div class="col-md-3">
+                <div class="list-group text-center">
+                    <a href="{% url 'product_list' %}" class="list-group-item list-group-item-action {% if not category %}active{% endif %}">همه محصولات</a>
+                    {% for c in categories %}
+                        <a href="{% url 'product_list' %}?category={{c.id}}" class="list-group-item list-group-item-action {% if category.id == c.id %}active{% endif %}">{{c.name}}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-9 text-right">
+                <h3>{% if category %}{{category.name}}{% else %}همه محصولات{% endif %}</h3>
+                <hr>
+                <form method="get" class="m-3 w-50 mx-auto">
+                    <div class="input-group">
+                        {{search_form.query }}
+                        <button type="submit" class="btn btn-info rounded-0">جستجو</button>
+                    </div>
+                </form>
+                <br>
+                <div class="row">
+                    {% for product in products %}
+                        {% if product.available == True %}
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                            <div class="card-body">
+                                <img src="{{product.image.url}}" alt="" class="img-fluid d-block mx-auto" width="150px">
+                                <br><br>
+                                <p><span>{{product.name}}</span></p>
+                                <p>قیمت: <span class="text-danger">{{product.price| intcomma:False}}</span> تومان</p>
+                                <p>موجودی: {{ product.stock }}</p>
+                                <p>دسته بندی: {{product.category }}</p>
+                                
+                                <a href="{% url 'product_detail' product.id %}" class="btn btn-dark btn-block">مشاهده جزئیات</a>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <div class="product-rating">
+                                    {% with avg=product|avg_rating %}
+                                        {% if avg > 0 %}
+                                            <small class="text-warning">
+                                                {% for _ in "12345" %}
+                                                    {% if forloop.counter <= avg %}
+                                                        <i class="fas fa-star"></i>
+                                                    {% elif forloop.counter|add:"-0.5" <= avg %}
+                                                        <i class="fas fa-star-half-alt"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                ({{ product.reviews.filter.is_active.count }} نظر)
+                                            </small>
+                                        {% else %}
+                                            <small class="text-muted">بدون امتیاز</small>
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                       {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <br>
+        <ul class="pagination justify-content-center">
+            {% if products.has_previous %}
+            <li class="page-item">
+                <a href="?page={{products.previous_page_number}}" class="page-link rounded-0">قبلی</a>
+            </li>
+            {% endif %}
+            <li class="page-item">
+                <a href="#" class="page-link disabled rounded-0">صفحه {{products.number}} از {{products.paginator.num_pages}}</a>
+            </li>
+            {% if products.has_next %}
+                <li class="page-item">
+                    <a href="?page={{products.next_page_number}}" class="page-link rounded-0">بعدی</a>
+                </li>
+            {% endif %}
+
+        </ul>
+    </div>
+    <br><br><br>
+{% endblock content %}

@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow">
+                <div class="card-header text-white text-center py-3" style="background-color: #6f42c1;">
+                    <h4 class="mb-0"> <i class="fas fa-comment-alt me-2"></i>&nbsp; ثبت نظر برای {{ product.name }}</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-center text-danger">
+                        توجه ! امتیازها به ترتیب از راست به چپ بیشتر می شوند
+                    </p>
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- بخش امتیازدهی با ستاره‌ها -->
+                        <div class="mb-4">
+                            <label class="form-label fs-5 mb-3 float-right">{{ form.rating.label }}</label>
+                            <div class="rating-stars text-center">
+                                {% for i in "54321" %}
+                                <div class="form-check form-check-inline mx-1">
+                                    <input class="form-check-input d-none" 
+                                           type="radio" 
+                                           name="{{ form.rating.name }}" 
+                                           id="rating_{{ i }}" 
+                                           value="{{ i }}"
+                                           {% if form.rating.value == i %}checked{% endif %}>
+                                    <label class="form-check-label star-label" for="rating_{{ i }}">
+                                        <i class="fa-star {% if form.rating.value >= i|add:'0' %}fas text-warning{% else %}far text-secondary{% endif %} fa-2x"></i>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {{ form.rating.errors }}
+                        </div>
+                        
+                        <!-- بخش دیدگاه -->
+                        <div class="mb-4 text-right">
+                            <label for="{{ form.comment.id_for_label }}" class="form-label fs-5">{{ form.comment.label }}</label>
+                            <textarea name="{{ form.comment.name }}" 
+                                      id="{{ form.comment.id_for_label }}" 
+                                      class="form-control" 
+                                      rows="5"
+                                      placeholder="دیدگاه خود را درباره این محصول بنویسید...">{% if form.comment.value %}{{ form.comment.value }}{% endif %}</textarea>
+                            {{ form.comment.errors }}
+                        </div>
+                        
+                        <!-- دکمه‌های اقدام -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-success px-4 py-2">
+                                <i class="fas fa-check-circle me-2"></i>
+                                {% if existing_review %}بروزرسانی نظر{% else %}ثبت نظر{% endif %}
+                            </button>
+                            <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-secondary px-4 py-2">
+                                <i class="fas fa-times-circle me-2"></i>انصراف
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* استایل‌های سفارشی برای فرم */
+    .rtl-form {
+        direction: rtl;
+        text-align: right;
+    }
+    
+    .rating-stars {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .star-label {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .star-label:hover,
+    .star-label:hover ~ .star-label,
+    .form-check-input:checked ~ .star-label {
+        color: #ffc107 !important;
+        transform: scale(1.1);
+    }
+    
+    .form-check-input:checked + .star-label i {
+        font-weight: 900;
+    }
+    
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        border-radius: 0 !important;
+    }
+    
+    @media (max-width: 576px) {
+        .rating-stars i {
+            font-size: 1.5rem !important;
+        }
+        
+        .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .d-flex {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<script>
+    // اسکریپت برای بهبود تعامل با ستاره‌ها
+    document.addEventListener('DOMContentLoaded', function() {
+        const stars = document.querySelectorAll('.star-label');
+        
+        stars.forEach(star => {
+            star.addEventListener('mouseover', function() {
+                const currentStar = this;
+                let allStars = Array.from(stars);
+                allStars = allStars.reverse();
+                
+                allStars.forEach(s => {
+                    if (s === currentStar || s.compareDocumentPosition(currentStar) & Node.DOCUMENT_POSITION_FOLLOWING) {
+                        s.querySelector('i').classList.add('fas');
+                        s.querySelector('i').classList.remove('far');
+                    }
+                });
+            });
+            
+            star.addEventListener('mouseout', function() {
+                const checkedStar = document.querySelector('.form-check-input:checked');
+                
+                stars.forEach(s => {
+                    if (!checkedStar || s.getAttribute('for') !== checkedStar.getAttribute('id')) {
+                        s.querySelector('i').classList.remove('fas');
+                        s.querySelector('i').classList.add('far');
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

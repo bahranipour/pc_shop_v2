@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}{{product.name}}{% endblock title %}
+{% block content %}
+    <div class="container">
+        <div class="card mt-3" dir="rtl">
+            <div class="card-body text-right">
+                <img src="{{product.image.url}}" alt="" class="img-fluid d-block mx-auto" width="250px">
+                <hr>
+                <p>نام محصول: {{product.name}}</p>
+                <p>دسته بندی: {{product.category.name }}</p>
+                <p>قیمت : <span class="text-danger">{{product.price|intcomma:False}}</span> تومان</p>
+                
+                <p>موجودی : <span class="text-success">{{product.stock}}</span> عدد</p>
+                <p>توضیحات : {{product.description }}</p>
+                <br><br>
+                <h3 class="text-center">سفارش محصول</h3>
+                <hr>
+                <form action="{% url 'create_order' product.id %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        {{ form.quantity.label_tag }}
+                        {{ form.quantity }}
+                        {% if form.quantity.errors %}
+                            <div class="error-message">
+                                {% for error in form.quantity.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary">ثبت سفارش</button>
+                </form>
+     
+    
+
+
+    <!-- بعد از بخش مشخصات محصول -->
+
+    <div class="mt-5">
+        <h4 class="mb-4 border-bottom pb-2">
+            <i class="fas fa-comments text-primary me-2"></i>
+            نظرات کاربران
+        </h4>
+        
+        {% if reviews %}
+        <div class="reviews-list">
+            {% for review in reviews %}
+            <div class="card mb-3">
+                <div class="card-body bg-light">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-user-circle me-2"></i>
+                            {{ review.user.username }}
+                        </h5>
+                        <div class="rating">
+                            {% for i in "12345" %}
+                                {% if i|add:"0" <= review.rating %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-warning"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <p class="text-muted small">
+                        <i class="far fa-clock me-1"></i>
+                        {{ review.created_at|date:"Y/m/d" }}
+                    </p>
+                    <p class="card-text mt-3">{{ review.comment }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            هنوز نظری برای این محصول ثبت نشده است.
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if request.user.is_authenticated %}
+    <a href="{% url 'add_review' product.id %}" class="btn btn-warning">
+        {% if user_review %}ویرایش نظر شما{% else %}ثبت نظر جدید{% endif %}
+    </a>
+    {% else %}
+    <div class="alert alert-warning">
+        برای ثبت نظر باید <a href="{% url 'login' %}">وارد حساب کاربری</a> شوید.
+    </div>
+    {% endif %}
+</div>
+</div>
+</div>
+    <br><br>
+{% endblock content %}
