@@ -3,4 +3,4 @@
 ## 2) python manage.py migrate store
 ## 3) python manage.py createsuperuser
 ---------------------------------------
-### this is project have rating prodcut,comment for product, search product
+### adding rating prodcut,comment for product, search product
